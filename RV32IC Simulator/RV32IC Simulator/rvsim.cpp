@@ -16,7 +16,8 @@
 using namespace std;
 
 unsigned int pc;
-unsigned char memory[(16 + 64) * 1024];
+unsigned char memory[(16 + 64) * 1024]; // 80Kb of memory (might be changed to 128Kb)
+unsigned int reg[32];
 
 void emitError(char *s)
 {
