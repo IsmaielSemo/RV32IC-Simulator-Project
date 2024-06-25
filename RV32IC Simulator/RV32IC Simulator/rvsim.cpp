@@ -156,7 +156,7 @@ void instDecExec(unsigned int instWord)
         switch (funct3)
       {
        case 0: // sw (store word)
-	      cout << "\tSW\tx" << 
+	      cout << "\tSW\tx" << rs2 << funct7+ rd << "("<< rs1 << ")"\n";
         break;
  }
 	else
