@@ -32,11 +32,21 @@ void updateReg(int reg_number, int value){ //function that updates content of re
 		reg[reg_number] = value; //change it
 }
 
+unsigned int readfromReg (unsigned int reg_number){
+       if(reg_number >= 31)
+		cout << "No such register exists." << endl;
+	else 
+	       return reg[reg_number];
+}
+
+
+
 void emitError(char *s)
 {
 	cout << s;
 	exit(0);
 }
+
 
 void printPrefix(unsigned int instA, unsigned int instW)
 {
