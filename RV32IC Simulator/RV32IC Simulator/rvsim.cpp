@@ -19,6 +19,19 @@ unsigned int pc;
 unsigned char memory[(16 + 64) * 1024]; // 80Kb of memory (might be changed to 128Kb)
 unsigned int reg[32];
 
+void RegIntial(){ //initializing the zero register
+	Reg[0] = 0;
+}
+
+void updateReg(int reg_number, int value){ //function that updates content of register
+	if(reg_number == 0) //if the register is the zero register
+		cout << “Can’t change the value of register 0” << endl; //don't change it
+	else if(reg_number < 0 || reg_number > 31)
+		cout << "No such register exists." << endl;
+	else 
+		reg[reg_number] = value; //change it
+}
+
 void emitError(char *s)
 {
 	cout << s;
