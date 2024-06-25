@@ -120,14 +120,35 @@ void instDecExec(unsigned int instWord)
 		case 0:
 			cout << "\tADDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
 			break;
+		case 2:
+                	cout << "\tSLTI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
+                	break;
+            	case 3:
+                	cout << "\tSLTIU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
+                	break;
+            	case 4:
+                	cout << "\tXORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
+                	break;
+            	case 6:
+                	cout << "\tORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
+                	break;
+            	case 7:
+                	cout << "\tANDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
+                	break;
+            	case 1:
+                	cout << "\tSLLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31)<< "\n";
+                	break;
+            	case 5:
+                	if(I_imm & 0x400 == 1024)
+                    		cout << "\tSRAI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n";
+                	else
+                    		cout << "\tSRLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm&31) << "\n";
+                	break;
 		default:
 			cout << "\tUnkown I Instruction \n";
 		}
 	}
-	else
-	{
-		cout << "\tUnkown Instruction \n";
-	}
+	
 
 
 	else if (opcode == 0x23) // S-type instructions
@@ -138,6 +159,10 @@ void instDecExec(unsigned int instWord)
 	      cout << "\tSW\tx" << 
         break;
  }
+	else
+		{
+			cout << "\tUnkown Instruction \n";
+		}
 
 int main(int argc, char *argv[])
 {
