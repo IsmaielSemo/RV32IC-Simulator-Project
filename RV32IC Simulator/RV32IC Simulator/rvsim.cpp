@@ -128,7 +128,16 @@ void instDecExec(unsigned int instWord)
 	{
 		cout << "\tUnkown Instruction \n";
 	}
-}
+
+
+	else if (opcode == 0x23) // S-type instructions
+       {
+        switch (funct3)
+      {
+       case 0: // sw (store word)
+	      cout << "\tSW\tx" << 
+        break;
+ }
 
 int main(int argc, char *argv[])
 {
