@@ -16,37 +16,32 @@
 using namespace std;
 
 unsigned int pc;
-unsigned char memory[(16 + 64) * 1024]; // 80Kb of memory (might be changed to 128Kb)
+unsigned char memory[(64 + 64) * 1024]; // 80Kb of memory (might be changed to 128Kb)
 unsigned int reg[32];
 
-void RegIntial(){ //initializing the zero register
-	Reg[0] = 0;
-}
-
-void updateReg(int reg_number, int value){ //function that updates content of register
-	if(reg_number == 0) //if the register is the zero register
-		cout << “Can’t change the value of register 0” << endl; //don't change it
-	else if(reg_number < 0 || reg_number > 31)
+void updateReg(int reg_number, int value)
+{																// function that updates content of register
+	if (reg_number == 0)										// if the register is the zero register
+		cout << "Can’t change the value of register 0" << endl; // don't change it
+	else if (reg_number < 0 || reg_number > 31)
 		cout << "No such register exists." << endl;
-	else 
-		reg[reg_number] = value; //change it
+	else
+		reg[reg_number] = value; // change it
 }
 
-unsigned int readfromReg (unsigned int reg_number){
-       if(reg_number >= 31)
+unsigned int readfromReg(unsigned int reg_number)
+{
+	if (reg_number >= 31)
 		cout << "No such register exists." << endl;
-	else 
-	       return reg[reg_number];
+	else
+		return reg[reg_number];
 }
-
-
 
 void emitError(char *s)
 {
 	cout << s;
 	exit(0);
 }
-
 
 void printPrefix(unsigned int instA, unsigned int instW)
 {
@@ -86,6 +81,34 @@ void instDecExec(unsigned int instWord)
 				cout << "\tADD\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
 			}
 			break;
+		case 1:
+			cout << "\tSLL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			break;
+		case 2:
+			cout << "\tSLT\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			break;
+		case 3:
+			cout << "\tSLTU\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			break;
+		case 4:
+			cout << "\tXOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			break;
+		case 5:
+			if (funct7 == 32)
+			{
+				cout << "\tSRA\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			}
+			else
+			{
+				cout << "\tSRL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			}
+			break;
+		case 6:
+			cout << "\tOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			break;
+		case 7:
+			cout << "\tAND\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+			break;
 		default:
 			cout << "\tUnkown R Instruction \n";
 		}
@@ -109,7 +132,7 @@ void instDecExec(unsigned int instWord)
 
 int main(int argc, char *argv[])
 {
-
+	reg[0] = 0; // initialize the zero register
 	unsigned int instWord = 0;
 	ifstream inFile;
 	ofstream outFile;
