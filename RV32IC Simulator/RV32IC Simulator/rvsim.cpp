@@ -205,11 +205,18 @@ void instDecExec(unsigned int instWord)
     }
     else if (opcode == 0x23) // S-type instructions
     {
-        switch (funct3)
-        {
-        case 0: // sw (store word)
-            cout << "\tSW\tx" << rs2 << (funct7 + rd) << "(" << rs1 << ")\n";
-            break;
+        switch (funct3) {
+            case 0: // sw (store word)
+                cout << "\tSW\tx" << rs2 << (funct7 + rd) << "(" << rs1 << ")\n";
+                break;
+	    case 1: //sh (store half word)
+		cout <<  "\tSH\tx" << rs2 << (funct7 + rd) << "(" << rs1 << ")\n";
+		break;
+	    case 2: //sb (store byte)
+		cout <<  "\tSB\tx" << rs2 << (funct7 + rd) << "(" << rs1 << ")\n";
+		break;
+		default:
+		cout<<"\tunknown S type instruction\n";
         }
     }
     else if (opcode == 0x63) // B-type instructions
