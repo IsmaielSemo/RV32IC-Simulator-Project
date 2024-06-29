@@ -63,6 +63,9 @@ void instDecExec(unsigned int instWord) {
 
     // — inst[31] — inst[30:25] inst[24:21] inst[20]
     I_imm = ((instWord >> 20) & 0x7FF) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
+    S_imm = ((instWord >> 31) & 0x7FF) | (((instWord >> 7) & 0x1F) << 5) | ((instWord >> 25) & 0x7F);
+    B_imm = (((instWord >> 31) & 0x1) << 12) | (((instWord >> 7) & 0x1F) << 5) | (((instWord >> 25) & 0x3F) << 1) | (((instWord >> 8) & 0xF) << 11);
+
 
     printPrefix(instPC, instWord);
 
@@ -165,6 +168,31 @@ void instDecExec(unsigned int instWord) {
             case 0: // sw (store word)
                 cout << "\tSW\tx" << rs2 << (funct7 + rd) << "(" << rs1 << ")\n";
                 break;
+        }
+    }
+    else if(opcode == 0x63) // B-type instructions
+    {
+        switch(funct3){
+            case 0:
+                cout << "\tBEQ\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << (int) B_imm << "\n";
+                break;
+            case 1:
+                cout << "\tBNE\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << (int) B_imm << "\n";
+                break;
+            case 4:
+                cout << "\tLBLT\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << (int) B_imm << "\n";
+                break;
+            case 5:
+                cout << "\tBGE\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << (int) B_imm << "\n";
+                break;
+            case 6:
+                cout << "\tBLTU\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << (int) B_imm << "\n";
+                break;
+            case 7:
+                cout << "\tBGEU\tx" << rs1 << ", x" << rs2 << ", " << hex << "0x" << (int) B_imm << "\n";
+                break;
+            default:
+                cout << "\tUnkown I Instruction \n";
         }
     }
     else
