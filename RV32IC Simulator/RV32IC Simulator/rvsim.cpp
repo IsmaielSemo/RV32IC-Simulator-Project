@@ -208,12 +208,22 @@ void instDecExec(unsigned int instWord)
         switch (funct3) {
             case 0: // sw (store word)
                 cout << "\tSW\tx" << rs2 << (funct7 + rd) << "(" << rs1 << ")\n";
+		    
+		reg[rs2] & 0xFF =  memory[reg[rs1] + S_imm]; //storing first 8 bits
+		(reg[rs2] >> 8) & 0xFF =  memory[reg[rs1] + S_imm+1]; //storing the next 8 bits
+	        (reg[rs2] >> 16) & 0xFF = memory[reg[rs1] + S_imm + 2]; //storing the next 8 bits
+	        (reg[rs2] >> 24) & 0xFF = memory[reg[rs1] + S_imm + 3]; //storing the next 8 bits
                 break;
 	    case 1: //sh (store half word)
 		cout <<  "\tSH\tx" << rs2 << (funct7 + rd) << "(" << rs1 << ")\n";
+		    
+	        reg[rs2] & 0xFF = memory[reg[rs1] + S_imm] ; // storing the first 8 bits
+                (reg[rs2] >> 8) & 0xFF = memory[reg[rs1] + S_imm + 1] ; // storing the next 8 bits
 		break;
 	    case 2: //sb (store byte)
 		cout <<  "\tSB\tx" << rs2 << (funct7 + rd) << "(" << rs1 << ")\n";
+		    
+		 reg[rs2] & 0xFF = memory[reg[rs1] + S_imm] ; 
 		break;
 		default:
 		cout<<"\tunknown S type instruction\n";
