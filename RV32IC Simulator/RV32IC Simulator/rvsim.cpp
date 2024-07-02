@@ -11,13 +11,16 @@
 #include <iostream>
 #include <fstream>
 #include "stdlib.h"
+#include <string>
 #include <iomanip>
+#include <vector>
 
 using namespace std;
 
 unsigned int pc;
 unsigned char memory[(64 + 64) * 1024]; // 80Kb of memory (might be changed to 128Kb)
 unsigned int reg[32];
+vector<string> Couts;
 
 void updateReg(int reg_number, int value)
 {                                                               // function that updates content of register
@@ -37,7 +40,7 @@ unsigned int readfromReg(unsigned int reg_number)
         return reg[reg_number];
 }
 
-void emitError(char *s)
+void emitError(const char *s)
 {
     cout << s;
     exit(0);
@@ -59,6 +62,7 @@ void instDecExec(unsigned int instWord)
     opcode = instWord & 0x0000007F;         // 00000000000000000000000001111111
     rd = (instWord >> 7) & 0x0000001F;      // 00000000000000000000011111000000
     funct3 = (instWord >> 12) & 0x00000007; // 00000000000000000011100000000000
+    funct7 = (instWord >> 25) & 0x0000007F; // 00000000000000000000000001111111
     rs1 = (instWord >> 15) & 0x0000001F;    // 00000000000000011111000000000000
     rs2 = (instWord >> 20) & 0x0000001F;    // 00000000000111110000000000000000
 
@@ -288,6 +292,28 @@ void instDecExec(unsigned int instWord)
             if (rd == 0 && rs1 == 0 && rs2 == 0)
             {
                 cout << "\tECALL\n";
+                switch (reg[17])
+                {
+                case 1:
+                    Couts.push_back(to_string(reg[10]) + "\n");
+                    break;
+                case 4:
+                    Couts.push_back(to_string(reg[10]));
+                    address = reg[10];
+                    while (memory[address] != 0)
+                    {
+                        Couts[Couts.size() - 1] += memory[address];
+                        address++;
+                    }
+                    break;
+                case 10:
+                    cout << "\tExit\n";
+                    exit(0);
+                    break;
+                default:
+                    cout << "\tUnkown Ecall\n";
+                    break;
+                }
             }
             else
             {
@@ -308,21 +334,30 @@ void instDecExec(unsigned int instWord)
 int main(int argc, char *argv[])
 {
     reg[0] = 0; // initialize the zero register
+    reg[2] = 64 * 1024;
     unsigned int instWord = 0;
     ifstream inFile;
+    ifstream inFile2;
     ofstream outFile;
 
     if (argc < 1)
         emitError("use: rvcdiss <machine_code_file_name>\n");
 
     inFile.open(argv[1], ios::in | ios::binary | ios::ate);
+    inFile2.open(argv[2], ios::in | ios::binary | ios::ate);
 
-    if (inFile.is_open())
+    if (inFile.is_open() && inFile2.is_open())
     {
         int fsize = inFile.tellg();
 
         inFile.seekg(0, inFile.beg);
         if (!inFile.read((char *)memory, fsize))
+            emitError("Cannot read from input file\n");
+
+        int fsize2 = inFile2.tellg();
+
+        inFile2.seekg(0, inFile2.beg);
+        if (!inFile2.read((char *)(memory + 64 * 1024), fsize2))
             emitError("Cannot read from input file\n");
 
         while (true)
@@ -332,7 +367,21 @@ int main(int argc, char *argv[])
                        (((unsigned char)memory[pc + 2]) << 16) |
                        (((unsigned char)memory[pc + 3]) << 24);
             pc += 4;
+            reg[0] = 0;
             instDecExec(instWord);
+            if (pc > 64)
+                break;
+        }
+
+        cout << "\nOutput: " << endl;
+        for (int i = 0; i < Couts.size(); i++)
+        {
+            cout << Couts[i];
+        }
+        cout << "\nRegisters===================================" << endl;
+        for (int i = 0; i < 32; i++)
+        {
+            cout << "x" << dec << i << " = " << reg[i] << endl;
         }
     }
     else
