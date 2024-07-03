@@ -6,9 +6,8 @@ main:
 li a7, 4
 la a0, message1
 ecall
-li a7, 5
-ecall
-mv s0, a0
+
+addi s0, zero, 10
 
 add s1, zero, zero #i = 0
 loop: beq s0, zero, Exit
@@ -30,5 +29,5 @@ ecall
 
 
 .data
-message1: .string "Input a number: "
-message2: .string "The number of times we incremented this number before it reached 0 was: "
+message1: .string "The number is 10\n"
+message2: .string "The number of times we incremented the counter before it reached 0 was: "
