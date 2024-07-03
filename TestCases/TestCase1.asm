@@ -1,20 +1,16 @@
 li a7, 4
 la a0, string1
 ecall
-li a7, 5
-ecall
-mv s0, a0 #first number
+
 
 li a7, 4
 la a0, string2
 ecall
-li a7, 5 
-ecall
-mv s1, a0 #second number
 
 
-add a0, s0,zero #1st parameter
-add a1, s1, zero #2nd parameter
+
+addi a0, zero,10 #1st parameter
+addi a1, zero, 15 #2nd parameter
 call sum
 
 addi s2, a0, 0 # z= x+y
@@ -33,6 +29,6 @@ add a0, a0, a1 #return
 ret
 
 .data
-string1: .string "Enter first number : "
-string2: .string "Enter second number : "
+string1: .string "First number : 10\n"
+string2: .string "Second number : 15 \n"
 string3: .string "Their sum is : "
