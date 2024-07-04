@@ -52,9 +52,19 @@ void printPrefix(unsigned int instA, unsigned int instW)
     cout << "0x" << hex << std::setfill('0') << std::setw(8) << instA << "\t0x" << std::setw(8) << instW;
 }
 
+bool isCompressed(unsigned int opcode){
+    opcode = opcode & 0x0000003; //last 2 bits
+    if (opcode == 0x0 || opcode == 0x1) {
+        return true;  // It is a compressed instruction
+    } else {
+        return false; // It is not a compressed instruction
+    }
+}
+
 void instDecExec(unsigned int instWord)
 {
     unsigned int rd, rs1, rs2, funct3, funct7, opcode;
+    unsigned int funct4; //for compressed instruction
     unsigned int I_imm, S_imm, B_imm, U_imm, J_imm;
     unsigned int address;
 
@@ -74,263 +84,240 @@ void instDecExec(unsigned int instWord)
     U_imm = ((instWord & 0xFFFFF000));
     J_imm = (((instWord >> 31) & 0x1) << 20) | (((instWord >> 12) & 0xFF) << 12) | (((instWord >> 20) & 0x1) << 11) | (((instWord >> 21) & 0x3FF) << 1) | 0;
 
-    printPrefix(instPC, instWord);
 
-    if (opcode == 0x33)
-    { // R Instructions
-        switch (funct3)
-        {
-        case 0:
-            if (funct7 == 32)
-            {
-                cout << "\tSUB\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-                reg[rd] = (signed)reg[rs1] - (signed)reg[rs2];
-            }
-            else
-            {
-                cout << "\tADD\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-                reg[rd] = (signed)reg[rs1] + (signed)reg[rs2];
-            }
-            break;
-        case 1:
-            cout << "\tSLL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = reg[rs1] << reg[rs2];
-            break;
-        case 2:
-            cout << "\tSLT\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = ((signed)reg[rs1] < (signed)reg[rs2]) ? 1 : 0;
-            break;
-        case 3:
-            cout << "\tSLTU\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = (reg[rs1] < reg[rs2]) ? 1 : 0;
-            break;
-        case 4:
-            cout << "\tXOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = reg[rs1] ^ reg[rs2];
-            break;
-        case 5:
-            if (funct7 == 32)
-            {
-                cout << "\tSRA\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-                reg[rd] = (signed)reg[rs1] >> reg[rs2];
-            }
-            else
-            {
-                cout << "\tSRL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-                reg[rd] = reg[rs1] >> reg[rs2];
-            }
-            break;
-        case 6:
-            cout << "\tOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = reg[rs1] | reg[rs2];
-            break;
-        case 7:
-            cout << "\tAND\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = reg[rs1] & reg[rs2];
-            break;
-        default:
-            cout << "\tUnknown R Instruction \n";
+    printPrefix(instPC, instWord);
+    bool compressedStatus = isCompressed(opcode);
+
+    if(compressedStatus){
+        switch(funct4){
+            
         }
     }
-    else if (opcode == 0x13)
-    { // I-type instructions (everything except load)
-        switch (funct3)
-        {
-        case 0:
-            cout << "\tADDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = (signed)reg[rs1] + (signed)I_imm;
-            break;
-        case 2:
-            cout << "\tSLTI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = ((signed)reg[rs1] < (signed)I_imm) ? 1 : 0;
-            break;
-        case 3:
-            cout << "\tSLTIU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = (reg[rs1] < I_imm) ? 1 : 0;
-            break;
-        case 4:
-            cout << "\tXORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = reg[rs1] ^ I_imm;
-            break;
-        case 6:
-            cout << "\tORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = reg[rs1] | I_imm;
-            break;
-        case 7:
-            cout << "\tANDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = reg[rs1] & I_imm;
-            break;
-        case 1:
-            cout << "\tSLLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n";
-            reg[rd] = reg[rs1] << (I_imm & 31);
-            break;
-        case 5:
-            if ((I_imm & 0x400) == 1024)
-            {
-                cout << "\tSRAI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n";
-                reg[rd] = (signed)reg[rs1] >> (I_imm & 31);
-            }
-            else
-            {
-                cout << "\tSRLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n";
-                reg[rd] = reg[rs1] >> (I_imm & 31);
-            }
-            break;
-        default:
-            cout << "\tUnkown I Instruction \n";
-        }
-    }
-    else if (opcode == 0x3)
-    { // I-type instructions (load instructions)
-        switch (funct3)
-        {
-        case 0:
-            cout << "\tLB\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = (memory[reg[rs1] + (signed)I_imm]) | (((memory[reg[rs1] + (signed)I_imm] & 0x80) == 0x80) ? 0xFFFFFF00 : 0);
-            break;
-        case 1:
-            cout << "\tLH\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = (memory[reg[rs1] + (signed)I_imm]) | (memory[reg[rs1] + (signed)I_imm + 1] << 8) | (((memory[reg[rs1] + (signed)I_imm + 1] & 0x80) == 0x80) ? 0xFFFF0000 : 0);
-            break;
-        case 2:
-            cout << "\tLW\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = (memory[reg[rs1] + (signed)I_imm]) | (memory[reg[rs1] + (signed)I_imm + 1] << 8) | (memory[reg[rs1] + (signed)I_imm + 2] << 16) | (memory[reg[rs1] + (signed)I_imm + 3] << 24);
-            break;
-        case 4:
-            cout << "\tLBU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = memory[reg[rs1] + (signed)I_imm];
-            break;
-        case 5:
-            cout << "\tLHU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = memory[reg[rs1] + (signed)I_imm] | (memory[reg[rs1] + (signed)I_imm + 1] << 8);
-            break;
-        default:
-            cout << "\tUnkown I Instruction \n";
-        }
-    }
-    else if (opcode == 0x23) // S-type instructions
-    {
-        switch (funct3)
-        {
-        case 0: // sw (store word)
-            cout << "\tSW\tx" << rs2 << (signed)S_imm << "(" << rs1 << ")\n";
-            memory[reg[rs1] + (signed)S_imm] = reg[rs2] & 0xFF;
-            memory[reg[rs1] + (signed)S_imm + 1] = (reg[rs2] >> 8) & 0xFF;
-            memory[reg[rs1] + (signed)S_imm + 2] = (reg[rs2] >> 16) & 0xFF;
-            memory[reg[rs1] + (signed)S_imm + 3] = (reg[rs2] >> 24) & 0xFF;
-            break;
-        case 1: // sh (store half word)
-            cout << "\tSH\tx" << rs2 << (signed)S_imm << "(" << rs1 << ")\n";
-            memory[reg[rs1] + (signed)S_imm] = reg[rs2] & 0xFF;
-            memory[reg[rs1] + (signed)S_imm + 1] = (reg[rs2] >> 8) & 0xFF;
-            break;
-        case 2: // sb (store byte)
-            cout << "\tSB\tx" << rs2 << (signed)S_imm << "(" << rs1 << ")\n";
-            memory[reg[rs1] + (signed)S_imm] = reg[rs2] & 0xFF;
-            break;
-        default:
-            cout << "\tUnknown S type instruction\n";
-        }
-    }
-    else if (opcode == 0x63) // B-type instructions
-    {
-        switch (funct3)
-        {
-        case 0:
-            cout << "\tBEQ\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
-            break;
-        case 1:
-            cout << "\tBNE\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
-            break;
-        case 4:
-            cout << "\tBLT\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
-            break;
-        case 5:
-            cout << "\tBGE\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
-            break;
-        case 6:
-            cout << "\tBLTU\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
-            break;
-        case 7:
-            cout << "\tBGEU\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
-            break;
-        default:
-            cout << "\tUnknown I Instruction \n";
-        }
-    }
-    else if (opcode == 0x37) // U-type instructions
-    {
-        cout << "\tLUI\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";
-        reg[rd] = (int)U_imm;
-    }
-    else if (opcode == 0x17) // U-type instructions
-    {
-        cout << "\tAUIPC\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";
-        reg[rd] = ((int)U_imm) + pc - 4;
-    }
-    else if (opcode == 0x6F) // J-type instructions
-    {
-        cout << "\tJAL\tx" << rd << ", " << hex << "0x" << (int)J_imm << "\n";
-        reg[rd] = pc;
-        pc = pc + ((signed)J_imm) - 4;
-    }
-    else if (opcode == 0x67) // I-type instructions
-    {
-        cout << "\tJALR\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-        reg[rd] = pc;
-        pc = (reg[rs1] + (signed)I_imm) & 0xFFFFFFFE;
-    }
-    else if (opcode == 0x73) // E-call instructions
-    {
-        if (funct3 == 0)
-        {
-            if (rd == 0 && rs1 == 0 && rs2 == 0)
-            {
-                cout << "\tECALL\n";
-                switch (reg[17])
-                {
-                case 1:
-                    Couts.push_back(to_string(reg[10]) + "\n");
-                    break;
-                case 4:
-                    Couts.push_back(string(1, memory[reg[10] - 0xfc00000]));
-                    address = reg[10] + 1 - 0xfc00000;
-                    while (memory[address] != 0)
-                    {
-                        Couts[Couts.size() - 1] += memory[address];
-                        address++;
+
+    if (opcode == 0x33) { // R Instructions
+            switch (funct3) {
+                case 0:
+                    if (funct7 == 32) {
+                        cout << "\tSUB\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                        reg[rd] = (signed) reg[rs1] - (signed) reg[rs2];
+                    } else {
+                        cout << "\tADD\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                        reg[rd] = (signed) reg[rs1] + (signed) reg[rs2];
                     }
                     break;
-                case 10:
-                    Couts.push_back("Program exited with code " + to_string(reg[10]) + "\n");
-                    exitFlag = true;
+                case 1:
+                    cout << "\tSLL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                    reg[rd] = reg[rs1] << reg[rs2];
+                    break;
+                case 2:
+                    cout << "\tSLT\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                    reg[rd] = ((signed) reg[rs1] < (signed) reg[rs2]) ? 1 : 0;
+                    break;
+                case 3:
+                    cout << "\tSLTU\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                    reg[rd] = (reg[rs1] < reg[rs2]) ? 1 : 0;
+                    break;
+                case 4:
+                    cout << "\tXOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                    reg[rd] = reg[rs1] ^ reg[rs2];
+                    break;
+                case 5:
+                    if (funct7 == 32) {
+                        cout << "\tSRA\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                        reg[rd] = (signed) reg[rs1] >> reg[rs2];
+                    } else {
+                        cout << "\tSRL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                        reg[rd] = reg[rs1] >> reg[rs2];
+                    }
+                    break;
+                case 6:
+                    cout << "\tOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                    reg[rd] = reg[rs1] | reg[rs2];
+                    break;
+                case 7:
+                    cout << "\tAND\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
+                    reg[rd] = reg[rs1] & reg[rs2];
                     break;
                 default:
-                    cout << "\tUnknown Ecall\n";
+                    cout << "\tUnknown R Instruction \n";
+            }
+        } else if (opcode == 0x13) { // I-type instructions (everything except load)
+            switch (funct3) {
+                case 0:
+                    cout << "\tADDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = (signed) reg[rs1] + (signed) I_imm;
                     break;
-                }
+                case 2:
+                    cout << "\tSLTI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = ((signed) reg[rs1] < (signed) I_imm) ? 1 : 0;
+                    break;
+                case 3:
+                    cout << "\tSLTIU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = (reg[rs1] < I_imm) ? 1 : 0;
+                    break;
+                case 4:
+                    cout << "\tXORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = reg[rs1] ^ I_imm;
+                    break;
+                case 6:
+                    cout << "\tORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = reg[rs1] | I_imm;
+                    break;
+                case 7:
+                    cout << "\tANDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = reg[rs1] & I_imm;
+                    break;
+                case 1:
+                    cout << "\tSLLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int) I_imm & 31) << "\n";
+                    reg[rd] = reg[rs1] << (I_imm & 31);
+                    break;
+                case 5:
+                    if ((I_imm & 0x400) == 1024) {
+                        cout << "\tSRAI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int) I_imm & 31) << "\n";
+                        reg[rd] = (signed) reg[rs1] >> (I_imm & 31);
+                    } else {
+                        cout << "\tSRLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int) I_imm & 31) << "\n";
+                        reg[rd] = reg[rs1] >> (I_imm & 31);
+                    }
+                    break;
+                default:
+                    cout << "\tUnkown I Instruction \n";
             }
-            else
-            {
-                cout << "\tEBREAK\n";
+        } else if (opcode == 0x3) { // I-type instructions (load instructions)
+            switch (funct3) {
+                case 0:
+                    cout << "\tLB\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = (memory[reg[rs1] + (signed) I_imm]) |
+                              (((memory[reg[rs1] + (signed) I_imm] & 0x80) == 0x80) ? 0xFFFFFF00 : 0);
+                    break;
+                case 1:
+                    cout << "\tLH\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = (memory[reg[rs1] + (signed) I_imm]) | (memory[reg[rs1] + (signed) I_imm + 1] << 8) |
+                              (((memory[reg[rs1] + (signed) I_imm + 1] & 0x80) == 0x80) ? 0xFFFF0000 : 0);
+                    break;
+                case 2:
+                    cout << "\tLW\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = (memory[reg[rs1] + (signed) I_imm]) | (memory[reg[rs1] + (signed) I_imm + 1] << 8) |
+                              (memory[reg[rs1] + (signed) I_imm + 2] << 16) |
+                              (memory[reg[rs1] + (signed) I_imm + 3] << 24);
+                    break;
+                case 4:
+                    cout << "\tLBU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = memory[reg[rs1] + (signed) I_imm];
+                    break;
+                case 5:
+                    cout << "\tLHU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+                    reg[rd] = memory[reg[rs1] + (signed) I_imm] | (memory[reg[rs1] + (signed) I_imm + 1] << 8);
+                    break;
+                default:
+                    cout << "\tUnkown I Instruction \n";
             }
-        }
-        else
+        } else if (opcode == 0x23) // S-type instructions
         {
+            switch (funct3) {
+                case 0: // sw (store word)
+                    cout << "\tSW\tx" << rs2 << (signed) S_imm << "(" << rs1 << ")\n";
+                    memory[reg[rs1] + (signed) S_imm] = reg[rs2] & 0xFF;
+                    memory[reg[rs1] + (signed) S_imm + 1] = (reg[rs2] >> 8) & 0xFF;
+                    memory[reg[rs1] + (signed) S_imm + 2] = (reg[rs2] >> 16) & 0xFF;
+                    memory[reg[rs1] + (signed) S_imm + 3] = (reg[rs2] >> 24) & 0xFF;
+                    break;
+                case 1: // sh (store half word)
+                    cout << "\tSH\tx" << rs2 << (signed) S_imm << "(" << rs1 << ")\n";
+                    memory[reg[rs1] + (signed) S_imm] = reg[rs2] & 0xFF;
+                    memory[reg[rs1] + (signed) S_imm + 1] = (reg[rs2] >> 8) & 0xFF;
+                    break;
+                case 2: // sb (store byte)
+                    cout << "\tSB\tx" << rs2 << (signed) S_imm << "(" << rs1 << ")\n";
+                    memory[reg[rs1] + (signed) S_imm] = reg[rs2] & 0xFF;
+                    break;
+                default:
+                    cout << "\tUnknown S type instruction\n";
+            }
+        } else if (opcode == 0x63) // B-type instructions
+        {
+            switch (funct3) {
+                case 0:
+                    cout << "\tBEQ\tx" << rs1 << ", x" << rs2 << ", " << (int) B_imm << "\n";
+                    pc += (signed) B_imm - 4;
+                    break;
+                case 1:
+                    cout << "\tBNE\tx" << rs1 << ", x" << rs2 << ", " << (int) B_imm << "\n";
+                    pc += (signed) B_imm - 4;
+                    break;
+                case 4:
+                    cout << "\tBLT\tx" << rs1 << ", x" << rs2 << ", " << (int) B_imm << "\n";
+                    pc += (signed) B_imm - 4;
+                    break;
+                case 5:
+                    cout << "\tBGE\tx" << rs1 << ", x" << rs2 << ", " << (int) B_imm << "\n";
+                    pc += (signed) B_imm - 4;
+                    break;
+                case 6:
+                    cout << "\tBLTU\tx" << rs1 << ", x" << rs2 << ", " << (int) B_imm << "\n";
+                    pc += (signed) B_imm - 4;
+                    break;
+                case 7:
+                    cout << "\tBGEU\tx" << rs1 << ", x" << rs2 << ", " << (int) B_imm << "\n";
+                    pc += (signed) B_imm - 4;
+                    break;
+                default:
+                    cout << "\tUnknown I Instruction \n";
+            }
+        } else if (opcode == 0x37) // U-type instructions
+        {
+            cout << "\tLUI\tx" << rd << ", " << hex << "0x" << (int) U_imm << "\n";
+            reg[rd] = (int) U_imm;
+        } else if (opcode == 0x17) // U-type instructions
+        {
+            cout << "\tAUIPC\tx" << rd << ", " << hex << "0x" << (int) U_imm << "\n";
+            reg[rd] = ((int) U_imm) + pc - 4;
+        } else if (opcode == 0x6F) // J-type instructions
+        {
+            cout << "\tJAL\tx" << rd << ", " << hex << "0x" << (int) J_imm << "\n";
+            reg[rd] = pc;
+            pc = pc + ((signed) J_imm) - 4;
+        } else if (opcode == 0x67) // I-type instructions
+        {
+            cout << "\tJALR\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int) I_imm << "\n";
+            reg[rd] = pc;
+            pc = (reg[rs1] + (signed) I_imm) & 0xFFFFFFFE;
+        } else if (opcode == 0x73) // E-call instructions
+        {
+            if (funct3 == 0) {
+                if (rd == 0 && rs1 == 0 && rs2 == 0) {
+                    cout << "\tECALL\n";
+                    switch (reg[17]) {
+                        case 1:
+                            Couts.push_back(to_string(reg[10]) + "\n");
+                            break;
+                        case 4:
+                            Couts.push_back(string(1, memory[reg[10] - 0xfc00000]));
+                            address = reg[10] + 1 - 0xfc00000;
+                            while (memory[address] != 0) {
+                                Couts[Couts.size() - 1] += memory[address];
+                                address++;
+                            }
+                            break;
+                        case 10:
+                            Couts.push_back("Program exited with code " + to_string(reg[10]) + "\n");
+                            exitFlag = true;
+                            break;
+                        default:
+                            cout << "\tUnknown Ecall\n";
+                            break;
+                    }
+                } else {
+                    cout << "\tEBREAK\n";
+                }
+            } else {
+                cout << "\tUnknown Instruction \n";
+            }
+        } else {
             cout << "\tUnknown Instruction \n";
         }
     }
-    else
-    {
-        cout << "\tUnknown Instruction \n";
-    }
-}
+
 
 int main(int argc, char *argv[])
 {
