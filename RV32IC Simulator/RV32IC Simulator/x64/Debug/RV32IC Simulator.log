@@ -1,7 +1,5 @@
 ﻿  rvsim.cpp
-C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(165,38): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
-C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(272,35): warning C4554: '<<': check operator precedence for possible error; use parentheses to clarify precedence
-C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(56,18): warning C4101: 'address': unreferenced local variable
-C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(324,19): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
-C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(39): warning C4715: 'readfromReg': not all control paths return a value
+C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(352,19): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
+C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(358,20): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
+C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(42): warning C4715: 'readfromReg': not all control paths return a value
   RV32IC Simulator.vcxproj -> C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\x64\Debug\RV32IC Simulator.exe

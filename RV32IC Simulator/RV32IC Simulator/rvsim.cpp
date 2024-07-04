@@ -21,6 +21,7 @@ unsigned int pc;
 unsigned char memory[(64 + 64) * 1024]; // 80Kb of memory (might be changed to 128Kb)
 unsigned int reg[32];
 vector<string> Couts;
+bool exitFlag = false;
 
 void updateReg(int reg_number, int value)
 {                                                               // function that updates content of register
@@ -70,7 +71,7 @@ void instDecExec(unsigned int instWord)
     I_imm = ((instWord >> 20) & 0x7FF) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
     S_imm = ((instWord >> 7) & 0x1F) | ((instWord >> 25) & 0x7F) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
     B_imm = (((instWord >> 31) & 0x1) << 12) | (((instWord >> 7) & 0x1) << 11) | (((instWord >> 25) & 0x3F) << 5) | (((instWord >> 8) & 0xF) << 1) | 0 | (((instWord >> 31) ? 0xFFFFE000 : 0x0));
-    U_imm = (instWord & 0xFFFFF000);
+    U_imm = ((instWord & 0xFFFFF000));
     J_imm = (((instWord >> 31) & 0x1) << 20) | (((instWord >> 12) & 0xFF) << 12) | (((instWord >> 20) & 0x1) << 11) | (((instWord >> 21) & 0x3FF) << 1) | 0;
 
     printPrefix(instPC, instWord);
@@ -164,7 +165,7 @@ void instDecExec(unsigned int instWord)
             reg[rd] = reg[rs1] << (I_imm & 31);
             break;
         case 5:
-            if (I_imm & 0x400 == 1024)
+            if ((I_imm & 0x400) == 1024)
             {
                 cout << "\tSRAI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n";
                 reg[rd] = (signed)reg[rs1] >> (I_imm & 31);
@@ -228,7 +229,7 @@ void instDecExec(unsigned int instWord)
             memory[reg[rs1] + (signed)S_imm] = reg[rs2] & 0xFF;
             break;
         default:
-            cout << "\tunknown S type instruction\n";
+            cout << "\tUnknown S type instruction\n";
         }
     }
     else if (opcode == 0x63) // B-type instructions
@@ -260,24 +261,24 @@ void instDecExec(unsigned int instWord)
             pc += (signed)B_imm - 4;
             break;
         default:
-            cout << "\tUnkown I Instruction \n";
+            cout << "\tUnknown I Instruction \n";
         }
     }
     else if (opcode == 0x37) // U-type instructions
     {
         cout << "\tLUI\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";
-        reg[rd] = U_imm << 12;
+        reg[rd] = (int)U_imm;
     }
     else if (opcode == 0x17) // U-type instructions
     {
         cout << "\tAUIPC\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";
-        reg[rd] = U_imm << 12 + pc;
+        reg[rd] = ((int)U_imm) + pc - 4;
     }
     else if (opcode == 0x6F) // J-type instructions
     {
         cout << "\tJAL\tx" << rd << ", " << hex << "0x" << (int)J_imm << "\n";
         reg[rd] = pc;
-        pc = pc + ((signed)J_imm) * 2 - 4;
+        pc = pc + ((signed)J_imm) - 4;
     }
     else if (opcode == 0x67) // I-type instructions
     {
@@ -298,8 +299,8 @@ void instDecExec(unsigned int instWord)
                     Couts.push_back(to_string(reg[10]) + "\n");
                     break;
                 case 4:
-                    Couts.push_back(to_string(reg[10]));
-                    address = reg[10];
+                    Couts.push_back(string(1, memory[reg[10] - 0xfc00000]));
+                    address = reg[10] + 1 - 0xfc00000;
                     while (memory[address] != 0)
                     {
                         Couts[Couts.size() - 1] += memory[address];
@@ -307,11 +308,11 @@ void instDecExec(unsigned int instWord)
                     }
                     break;
                 case 10:
-                    cout << "\tExit\n";
-                    exit(0);
+                    Couts.push_back("Program exited with code " + to_string(reg[10]) + "\n");
+                    exitFlag = true;
                     break;
                 default:
-                    cout << "\tUnkown Ecall\n";
+                    cout << "\tUnknown Ecall\n";
                     break;
                 }
             }
@@ -322,19 +323,19 @@ void instDecExec(unsigned int instWord)
         }
         else
         {
-            cout << "\tUnkown Instruction \n";
+            cout << "\tUnknown Instruction \n";
         }
     }
     else
     {
-        cout << "\tUnkown Instruction \n";
+        cout << "\tUnknown Instruction \n";
     }
 }
 
 int main(int argc, char *argv[])
 {
-    reg[0] = 0; // initialize the zero register
-    reg[2] = 64 * 1024;
+    reg[0] = 0;             // initialize the zero register
+    reg[2] = 64 * 1024 - 1; // initialize the stack pointer
     unsigned int instWord = 0;
     ifstream inFile;
     ifstream inFile2;
@@ -369,7 +370,7 @@ int main(int argc, char *argv[])
             pc += 4;
             reg[0] = 0;
             instDecExec(instWord);
-            if (pc > 64)
+            if (exitFlag)
                 break;
         }
 
@@ -381,9 +382,14 @@ int main(int argc, char *argv[])
         cout << "\nRegisters===================================" << endl;
         for (int i = 0; i < 32; i++)
         {
-            cout << "x" << dec << i << " = " << reg[i] << endl;
+            cout << "x" << dec << i << " = " << hex << "0x" << reg[i] << endl;
         }
+
+        inFile.close();
+        inFile2.close();
     }
     else
         emitError("Cannot access input file\n");
+
+    return 0;
 }
