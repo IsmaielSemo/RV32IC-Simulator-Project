@@ -54,11 +54,11 @@ void printPrefix(unsigned int instA, unsigned int instW)
 
 void instDecExec(unsigned int instWord)
 {
-    unsigned int rd, rs1, rs2, funct3, funct7, opcode;
+    unsigned int rd, rs1, rs2, funct3, funct7, opcode, compressed_opcode, compressed_funct3, compressed_funct2, compressed_funct, compressed_rd, compressed_rs1, compressed_rs2, compressed_rd_dash, compressed_r1_dash, compressed_r2_dash;
     unsigned int I_imm, S_imm, B_imm, U_imm, J_imm;
     unsigned int address;
 
-    unsigned int instPC = pc - 4;
+    unsigned int instPC;
 
     opcode = instWord & 0x0000007F;         // 00000000000000000000000001111111
     rd = (instWord >> 7) & 0x0000001F;      // 00000000000000000000011111000000
@@ -71,10 +71,146 @@ void instDecExec(unsigned int instWord)
     I_imm = ((instWord >> 20) & 0x7FF) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
     S_imm = ((instWord >> 7) & 0x1F) | ((instWord >> 25) & 0x7F) | (((instWord >> 31) ? 0xFFFFF800 : 0x0));
     B_imm = (((instWord >> 31) & 0x1) << 12) | (((instWord >> 7) & 0x1) << 11) | (((instWord >> 25) & 0x3F) << 5) | (((instWord >> 8) & 0xF) << 1) | 0 | (((instWord >> 31) ? 0xFFFFE000 : 0x0));
-    U_imm = ((instWord & 0xFFFFF000));
+    U_imm = ((instWord & 0xFFFFF000) >> 12) | 0;
     J_imm = (((instWord >> 31) & 0x1) << 20) | (((instWord >> 12) & 0xFF) << 12) | (((instWord >> 20) & 0x1) << 11) | (((instWord >> 21) & 0x3FF) << 1) | 0;
 
     printPrefix(instPC, instWord);
+
+    if (opcode & 0x3 != 0x3)
+    {
+        instPC = pc - 2;
+    }
+    else
+    {
+        instPC = pc - 4;
+    }
+
+    // Decompression of Compressed Instructions
+    if (opcode & 0x3 != 0x3)
+    {
+        if (instWord == 0)
+        {
+            cout << "\tIllegal Instruction\n";
+            return;
+        }
+
+        compressed_opcode = opcode & 0x3;
+
+        if (compressed_opcode == 0)
+        {
+            compressed_funct3 = (instWord >> 13) & 0x7;
+            switch (compressed_funct3)
+            {
+            case 0: // Uncompress to ADDI rd', sp, imm
+                opcode = 0x13;
+                funct3 = 0;
+                rd = (instWord >> 2) & 0x7 + 8;
+                rs1 = 2;
+                rs2 = 0;
+                I_imm = ((((unsigned)instWord >> 5) & 0x1) << 3) |
+                        ((((unsigned)instWord >> 6) & 0x1) << 2) |
+                        ((((unsigned)instWord >> 7) & 0xF) << 6) |
+                        ((((unsigned)instWord >> 11) & 0x3) << 4) | (0 << 10);
+                break;
+
+            case 2: // uncompress to Lw, rd', imm(rs1')
+                opcode = 0x3;
+                funct3 = 2;
+                rd = (instWord >> 2) & 0x7 + 8;
+                rs1 = (instWord >> 7) & 0x7 + 8;
+                I_imm = ((((unsigned)instWord >> 5) & 0x1) << 6) |
+                        ((((unsigned)instWord >> 6) & 0x1) << 2) |
+                        ((((unsigned)instWord >> 10) & 0x7) << 3) |
+                        (0 << 7);
+                break;
+
+            case 6: // uncompress to SW, rs2', imm(rs1')
+                opcode = 0x23;
+                funct3 = 0;
+                rs2 = (instWord >> 2) & 0x7 + 8;
+                rs1 = (instWord >> 7) & 0x7 + 8;
+                S_imm = ((((unsigned)instWord >> 5) & 0x1) << 6) |
+                        ((((unsigned)instWord >> 6) & 0x1) << 2) |
+                        ((((unsigned)instWord >> 10) & 0x7) << 3) |
+                        (0 << 7);
+                break;
+            default:
+                cout << "\tUnknown C Instruction \n";
+                return;
+            }
+        }
+        else if (compressed_opcode == 1)
+        {
+            compressed_funct3 = (instWord >> 13) & 0x7;
+            switch (compressed_funct3)
+            {
+            case 0: // uncompress to ADDI rd,rd, nzimm[5:0] (Zero = C.NOP)
+                opcode = 0x13;
+                funct3 = 0;
+                rd = (instWord >> 7) & 0x1F;
+                rs1 = rd;
+                I_imm = ((instWord >> 2) & 0x1F) |
+                        (((instWord >> 12) & 0x1) << 5);
+                break;
+            case 1: // uncompress to JAL x1, offset[11:1]
+                opcode = 0x6F;
+                rd = 1;
+                J_imm = (((instWord >> 2) & 0x1) << 5) |
+                        (((instWord >> 3) & 0x7) << 1) |
+                        (((instWord >> 6) & 0x1) << 7) |
+                        (((instWord >> 7) & 0x1) << 6) |
+                        (((instWord >> 8) & 0x1) << 10) |
+                        (((instWord >> 9) & 0x3) << 8) |
+                        (((instWord >> 11) & 0x1) << 4) |
+                        (((instWord >> 12) & 0x1) << 11);
+                break;
+            case 2: // uncompress to LI rd, x0, imm[5:0]
+                opcode = 0x13;
+                funct3 = 0;
+                rd = (instWord >> 7) & 0x1F;
+                rs1 = 0;
+                rs2 = 0;
+                I_imm = ((instWord >> 2) & 0x1F) |
+                        (((instWord >> 12) & 0x1) << 5);
+                break;
+            case 3: // uncompress to LUI rd, imm[17:12]
+                opcode = 0x37;
+                rd = (instWord >> 7) & 0x1F;
+                U_imm = ((instWord >> 2) & 0x3F) |
+                        (((instWord >> 12) & 0x1) << 5);
+                break;
+            case 4:
+                compressed_funct2 = ((instWord >> 10) & 0x3);
+                switch (compressed_funct2)
+                {
+                case 0: // uncompress to SRLI rd',rd',shamt
+                    opcode = 0x13;
+                    funct3 = 5;
+                    rd = (instWord >> 7) & 0x7 + 8;
+                    rs1 = rd;
+                    I_imm = ((instWord >> 2) & 0x1F) |
+                            (((instWord >> 12) & 0x1) << 5);
+                    break;
+                case 1: // uncompress to SRAI rd',rd',shamt
+                    opcode = 0x13;
+                    funct3 = 5;
+                    rd = (instWord >> 7) & 0x7 + 8;
+                    rs1 = rd;
+                    I_imm = ((instWord >> 2) & 0x1F) |
+                            (((instWord >> 12) & 0x1) << 5) |
+                            0x400;
+                    break;
+                case 2: // uncompress to ANDI rd',rd',imm
+                    opcode = 0x13;
+                    funct3 = 0;
+                    rd = (instWord >> 7) & 0x7 + 8;
+                    rs1 = rd;
+                    I_imm = ((instWord >> 2) & 0x1F) |
+                            (((instWord >> 12) & 0x1) << 5);
+                }
+            }
+        }
+    }
 
     if (opcode == 0x33)
     { // R Instructions
@@ -238,27 +374,27 @@ void instDecExec(unsigned int instWord)
         {
         case 0:
             cout << "\tBEQ\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
+            pc = (signed)B_imm + instPC;
             break;
         case 1:
             cout << "\tBNE\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
+            pc = (signed)B_imm + instPC;
             break;
         case 4:
             cout << "\tBLT\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
+            pc = (signed)B_imm + instPC;
             break;
         case 5:
             cout << "\tBGE\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
+            pc = (signed)B_imm + instPC;
             break;
         case 6:
             cout << "\tBLTU\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
+            pc = (signed)B_imm + instPC;
             break;
         case 7:
             cout << "\tBGEU\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            pc += (signed)B_imm - 4;
+            pc = (signed)B_imm + instPC;
             break;
         default:
             cout << "\tUnknown I Instruction \n";
@@ -267,18 +403,18 @@ void instDecExec(unsigned int instWord)
     else if (opcode == 0x37) // U-type instructions
     {
         cout << "\tLUI\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";
-        reg[rd] = (int)U_imm;
+        reg[rd] = ((int)U_imm << 12);
     }
     else if (opcode == 0x17) // U-type instructions
     {
         cout << "\tAUIPC\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";
-        reg[rd] = ((int)U_imm) + pc - 4;
+        reg[rd] = ((int)U_imm << 12) + instPC;
     }
     else if (opcode == 0x6F) // J-type instructions
     {
         cout << "\tJAL\tx" << rd << ", " << hex << "0x" << (int)J_imm << "\n";
         reg[rd] = pc;
-        pc = pc + ((signed)J_imm) - 4;
+        pc = ((signed)J_imm) + instPC;
     }
     else if (opcode == 0x67) // I-type instructions
     {
@@ -296,11 +432,11 @@ void instDecExec(unsigned int instWord)
                 switch (reg[17])
                 {
                 case 1:
-                    Couts.push_back(to_string(reg[10]) + "\n");
+                    Couts.push_back(to_string((signed)reg[10]) + "\n");
                     break;
                 case 4:
-                    Couts.push_back(string(1, memory[reg[10] - 0xfc00000]));
-                    address = reg[10] + 1 - 0xfc00000;
+                    Couts.push_back(string(1, memory[reg[10]]));
+                    address = reg[10] + 1;
                     while (memory[address] != 0)
                     {
                         Couts[Couts.size() - 1] += memory[address];
@@ -363,11 +499,21 @@ int main(int argc, char *argv[])
 
         while (true)
         {
-            instWord = (unsigned char)memory[pc] |
-                       (((unsigned char)memory[pc + 1]) << 8) |
-                       (((unsigned char)memory[pc + 2]) << 16) |
-                       (((unsigned char)memory[pc + 3]) << 24);
-            pc += 4;
+            if ((unsigned char)memory[pc] & 0x3 != 0x3)
+            {
+                instWord = (unsigned char)memory[pc] |
+                           (((unsigned char)memory[pc + 1]) << 8) |
+                           0x0000;
+                pc += 2;
+            }
+            else
+            {
+                instWord = (unsigned char)memory[pc] |
+                           (((unsigned char)memory[pc + 1]) << 8) |
+                           (((unsigned char)memory[pc + 2]) << 16) |
+                           (((unsigned char)memory[pc + 3]) << 24);
+                pc += 4;
+            }
             reg[0] = 0;
             instDecExec(instWord);
             if (exitFlag)

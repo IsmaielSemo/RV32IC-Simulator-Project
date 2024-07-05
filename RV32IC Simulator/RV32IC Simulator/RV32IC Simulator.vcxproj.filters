@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Third_Party.cpp">
+    <ClCompile Include="rvsim.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
