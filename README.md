@@ -15,4 +15,4 @@ Ismaiel: I-type format instructions, B-type instructions, B-type instructions ex
 
 Seif: R-type format instructions, R-type instructions execution, I-type instructions execution, U-type instructions and their execution, J-type instruction and their execution, Compressed Instructions, Testing
 
-Jana: S-type format instructions, Compressed Instructions, Testing
+Jana: S-type format instructions, Compressed Instructions, Test cases, Testing
