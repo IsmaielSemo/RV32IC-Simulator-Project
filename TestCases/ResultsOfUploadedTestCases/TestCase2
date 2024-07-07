@@ -1,0 +1,78 @@
+C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\x64\Release>"RV32IC Simulator" t2.bin t2.bin
+0x00000000      0x00014117      AUIPC   x2, 0x14
+0x00000004      0x00010113      ADDI    x2, x2, 0x0
+0x00000008      0x00002099      JAL     x1, 0x46
+0x0000004e      0x00001101      ADDI    x2, x2, 0xffffffe0
+0x00000050      0x0000ce06      SW      x1, 1c(x2)
+0x00000052      0x0000cc22      SW      x8, 18(x2)
+0x00000054      0x00001000      ADDI    x8, x2, 0x20
+0x00000056      0x000047a9      ADDI    xf, x0, 0xa
+0x00000058      0xfef42623      SW      xf, ffffffec(x8)
+0x0000005c      0x000047d1      ADDI    xf, x0, 0x14
+0x0000005e      0xfef42423      SW      xf, ffffffe8(x8)
+0x00000062      0xfe842783      LW      xf, ffffffe8(x8)
+0x00000066      0x00179713      SLLI    xe, xf, 0x1
+0x0000006a      0xfec42783      LW      xf, ffffffec(x8)
+0x0000006e      0x000097ba      ADD     xf, xf, xe
+0x00000070      0x000017cd      ADDI    xf, xf, 0xfffffff3
+0x00000072      0xfef42623      SW      xf, ffffffec(x8)
+0x00000076      0xfec42503      LW      xa, ffffffec(x8)
+0x0000007a      0x00003f61      JAL     x1, 0xffffff98
+0x00000012      0x00001101      ADDI    x2, x2, 0xffffffe0
+0x00000014      0x0000ce22      SW      x8, 1c(x2)
+0x00000016      0x00001000      ADDI    x8, x2, 0x20
+0x00000018      0xfea42623      SW      xa, ffffffec(x8)
+0x0000001c      0x00004885      ADDI    x11, x0, 0x1
+0x0000001e      0x0000853e      ADD     xa, x0, xf
+0x00000020      0xfef42623      SW      xf, ffffffec(x8)
+0x00000024      0x00000073      ECALL
+0x00000028      0x00000001      ADDI    x0, x0, 0x0
+0x0000002a      0x00004472      LW      x8, 1c(x2)
+0x0000002c      0x00006105      ADDI    x2, x2, 0x20
+0x0000002e      0x00008082      JALR    x0, x1, 0x0
+0x0000007c      0x00004785      ADDI    xf, x0, 0x1
+0x0000007e      0x0000853e      ADD     xa, x0, xf
+0x00000080      0x000040f2      LW      x1, 1c(x2)
+0x00000082      0x00004462      LW      x8, 18(x2)
+0x00000084      0x00006105      ADDI    x2, x2, 0x20
+0x00000086      0x00008082      JALR    x0, x1, 0x0
+0x0000000a      0x000048a9      ADDI    x11, x0, 0xa
+0x0000000c      0x00000073      ECALL
+
+Output:
+37
+Program exited with code 1
+
+Registers===================================
+x0 = 0x0
+x1 = 0xa
+x2 = 0x14000
+x3 = 0x0
+x4 = 0x0
+x5 = 0x0
+x6 = 0x0
+x7 = 0x0
+x8 = 0x0
+x9 = 0x0
+x10 = 0x1
+x11 = 0x0
+x12 = 0x0
+x13 = 0x0
+x14 = 0x28
+x15 = 0x1
+x16 = 0x0
+x17 = 0xa
+x18 = 0x0
+x19 = 0x0
+x20 = 0x0
+x21 = 0x0
+x22 = 0x0
+x23 = 0x0
+x24 = 0x0
+x25 = 0x0
+x26 = 0x0
+x27 = 0x0
+x28 = 0x0
+x29 = 0x0
+x30 = 0x0
+x31 = 0x0
