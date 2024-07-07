@@ -14,8 +14,8 @@
 using namespace std;
 
 unsigned int pc;
-unsigned char memory[(64 + 64) * 1024]; // 80Kb of memory (might be changed to 128Kb)
-unsigned int reg[32];
+unsigned char memory[(64 + 64) * 1024]; // 80Kb of memory
+unsigned int reg[32]; //the 32 registers
 vector<string> Couts;  // output vector
 bool exitFlag = false; // if we ecall the exit service (a7 = 10)
 signed temp;
@@ -30,7 +30,7 @@ void updateReg(int reg_number, int value)                       // not used anym
         reg[reg_number] = value; // change it
 }
 
-unsigned int readfromReg(unsigned int reg_number)
+unsigned int readfromReg(unsigned int reg_number) //function that reads value in the registers
 {
     if (reg_number >= 31) // since we have 32 registers (0->31)
         cout << "No such register exists." << endl;
@@ -416,54 +416,54 @@ void instDecExec(unsigned int instWord)
         switch (funct3)
         {
         case 0:
-            if (funct7 == 32)
+            if (funct7 == 32) //sub operation
             {
                 cout << "\tSUB\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-                reg[rd] = (signed)reg[rs1] - (signed)reg[rs2];
+                reg[rd] = (signed)reg[rs1] - (signed)reg[rs2]; //the execution of the operation
             }
-            else
+            else //add operation
             {
                 cout << "\tADD\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-                reg[rd] = (signed)reg[rs1] + (signed)reg[rs2];
+                reg[rd] = (signed)reg[rs1] + (signed)reg[rs2]; //the execution of the operation
             }
             break;
-        case 1:
+        case 1: //shift logical left operation
             cout << "\tSLL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = reg[rs1] << reg[rs2];
+            reg[rd] = reg[rs1] << reg[rs2]; //execution of operation
             break;
         case 2:
-            cout << "\tSLT\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = ((signed)reg[rs1] < (signed)reg[rs2]) ? 1 : 0;
+            cout << "\tSLT\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //SLT operation
+            reg[rd] = ((signed)reg[rs1] < (signed)reg[rs2]) ? 1 : 0; //execution of operation
             break;
         case 3:
-            cout << "\tSLTU\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = (reg[rs1] < reg[rs2]) ? 1 : 0;
+            cout << "\tSLTU\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //SLTU operation
+            reg[rd] = (reg[rs1] < reg[rs2]) ? 1 : 0;//execution of operation
             break;
         case 4:
-            cout << "\tXOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = reg[rs1] ^ reg[rs2];
+            cout << "\tXOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //XOR operation
+            reg[rd] = reg[rs1] ^ reg[rs2];//execution of operation
             break;
         case 5:
             if (funct7 == 32)
             {
-                cout << "\tSRA\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-                reg[rd] = (signed)reg[rs1] >> reg[rs2];
+                cout << "\tSRA\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //SRA operation
+                reg[rd] = (signed)reg[rs1] >> reg[rs2]; //execution of operation
                 if ((signed)reg[rs1] < 0)
                     reg[rd] = (reg[rd] | 0xFFFFFFFF) << (32 - reg[rs2]);
             }
             else
             {
-                cout << "\tSRL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-                reg[rd] = reg[rs1] >> reg[rs2];
+                cout << "\tSRL\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //SRL operation
+                reg[rd] = reg[rs1] >> reg[rs2]; //execution of operation
             }
             break;
         case 6:
-            cout << "\tOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = reg[rs1] | reg[rs2];
+            cout << "\tOR\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //OR operation
+            reg[rd] = reg[rs1] | reg[rs2]; //execution of operation
             break;
         case 7:
-            cout << "\tAND\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n";
-            reg[rd] = reg[rs1] & reg[rs2];
+            cout << "\tAND\tx" << rd << ", x" << rs1 << ", x" << rs2 << "\n"; //AND operation
+            reg[rd] = reg[rs1] & reg[rs2]; //execution of operation
             break;
         default:
             cout << "\tUnknown R Instruction \n";
@@ -474,45 +474,45 @@ void instDecExec(unsigned int instWord)
         switch (funct3)
         {
         case 0:
-            cout << "\tADDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = (signed)reg[rs1] + (signed)I_imm;
+            cout << "\tADDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //Addi operation
+            reg[rd] = (signed)reg[rs1] + (signed)I_imm; //execution of operation
             break;
         case 2:
-            cout << "\tSLTI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = ((signed)reg[rs1] < (signed)I_imm) ? 1 : 0;
+            cout << "\tSLTI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //SLTI operation
+            reg[rd] = ((signed)reg[rs1] < (signed)I_imm) ? 1 : 0; //execution of operation
             break;
         case 3:
-            cout << "\tSLTIU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = (reg[rs1] < I_imm) ? 1 : 0;
+            cout << "\tSLTIU\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //SLTIU operation
+            reg[rd] = (reg[rs1] < I_imm) ? 1 : 0; //execution of operation
             break;
         case 4:
-            cout << "\tXORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = reg[rs1] ^ I_imm;
+            cout << "\tXORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //XORI operation
+            reg[rd] = reg[rs1] ^ I_imm; //execution of operation
             break;
         case 6:
-            cout << "\tORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = reg[rs1] | I_imm;
+            cout << "\tORI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //ORI operation
+            reg[rd] = reg[rs1] | I_imm; //execution of operation
             break;
         case 7:
-            cout << "\tANDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-            reg[rd] = reg[rs1] & I_imm;
+            cout << "\tANDI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //ANDI operation
+            reg[rd] = reg[rs1] & I_imm; //execution of operation
             break;
         case 1:
-            cout << "\tSLLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n";
-            reg[rd] = reg[rs1] << (I_imm & 31);
+            cout << "\tSLLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n"; //SLLI operation
+            reg[rd] = reg[rs1] << (I_imm & 31); //execution of operation
             break;
         case 5:
             if ((I_imm & 0x400) == 1024)
             {
-                cout << "\tSRAI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n";
-                reg[rd] = (signed)reg[rs1] >> (I_imm & 31);
+                cout << "\tSRAI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n"; //SRAI operation
+                reg[rd] = (signed)reg[rs1] >> (I_imm & 31); //execution of operation
                 if ((signed)reg[rs1] < 0)
                     reg[rd] = (reg[rd] | 0xFFFFFFFF) << (32 - (I_imm & 31));
             }
             else
             {
-                cout << "\tSRLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n";
-                reg[rd] = reg[rs1] >> (I_imm & 31);
+                cout << "\tSRLI\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << ((int)I_imm & 31) << "\n"; //SRLI operation
+                reg[rd] = reg[rs1] >> (I_imm & 31); //execution of operation
             }
             break;
         default:
@@ -577,33 +577,33 @@ void instDecExec(unsigned int instWord)
         switch (funct3)
         {
         case 0:
-            cout << "\tBEQ\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
+            cout << "\tBEQ\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n"; //BEQ operation
             if (reg[rs1] == reg[rs2])
-                pc = (signed)B_imm + instPC;
+                pc = (signed)B_imm + instPC; //execution of operation
             break;
         case 1:
-            cout << "\tBNE\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
+            cout << "\tBNE\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n"; //BNE operation
             if (reg[rs1] != reg[rs2])
-                pc = (signed)B_imm + instPC;
+                pc = (signed)B_imm + instPC; //execution of operation
             break;
         case 4:
-            cout << "\tBLT\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            if ((signed)reg[rs1] < (signed)reg[rs2])
+            cout << "\tBLT\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n"; //BLT operation
+            if ((signed)reg[rs1] < (signed)reg[rs2]) //execution of operation
                 pc = (signed)B_imm + instPC;
             break;
         case 5:
-            cout << "\tBGE\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            if ((signed)reg[rs1] >= (signed)reg[rs2])
+            cout << "\tBGE\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n"; //BGE operation
+            if ((signed)reg[rs1] >= (signed)reg[rs2]) //execution of operation
                 pc = (signed)B_imm + instPC;
             break;
         case 6:
-            cout << "\tBLTU\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            if (reg[rs1] < reg[rs2])
+            cout << "\tBLTU\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n"; //BLTU operation
+            if (reg[rs1] < reg[rs2]) //execution of operation
                 pc = (signed)B_imm + instPC;
             break;
         case 7:
-            cout << "\tBGEU\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n";
-            if (reg[rs1] >= reg[rs2])
+            cout << "\tBGEU\tx" << rs1 << ", x" << rs2 << ", " << (int)B_imm << "\n"; //BGEU operation
+            if (reg[rs1] >= reg[rs2]) //execution of operation
                 pc = (signed)B_imm + instPC;
             break;
         default:
@@ -612,24 +612,24 @@ void instDecExec(unsigned int instWord)
     }
     else if (opcode == 0x37) // U-type instructions
     {
-        cout << "\tLUI\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";
-        reg[rd] = ((int)U_imm << 12);
+        cout << "\tLUI\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n"; //LUI operation
+        reg[rd] = ((int)U_imm << 12); //execution of operation
     }
     else if (opcode == 0x17) // U-type instructions
     {
-        cout << "\tAUIPC\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";
-        reg[rd] = ((int)U_imm << 12) + instPC;
+        cout << "\tAUIPC\tx" << rd << ", " << hex << "0x" << (int)U_imm << "\n";// AUIPC operation
+        reg[rd] = ((int)U_imm << 12) + instPC; //execution of operation
     }
     else if (opcode == 0x6F) // J-type instructions
     {
-        cout << "\tJAL\tx" << rd << ", " << hex << "0x" << (int)J_imm << "\n";
-        reg[rd] = pc;
+        cout << "\tJAL\tx" << rd << ", " << hex << "0x" << (int)J_imm << "\n"; //JAL operation
+        reg[rd] = pc; //execution of operation and the line below
         pc = (J_imm) + instPC;
     }
     else if (opcode == 0x67) // I-type instructions
     {
-        cout << "\tJALR\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n";
-        reg[rd] = pc;
+        cout << "\tJALR\tx" << rd << ", x" << rs1 << ", " << hex << "0x" << (int)I_imm << "\n"; //JALR oepration
+        reg[rd] = pc; //execution of operation and the line below
         pc = (reg[rs1] + (signed)I_imm) & 0xFFFFFFFE;
     }
     else if (opcode == 0x73) // E-call instructions
@@ -641,8 +641,8 @@ void instDecExec(unsigned int instWord)
                 cout << "\tECALL\n";
                 switch (reg[17])
                 {
-                case 1:
-                    Couts.push_back(to_string((signed)reg[10]) + "\n");
+                case 1: //ECALL SERVICE 1
+                    Couts.push_back(to_string((signed)reg[10]) + "\n"); //execution of operation (for ecall 1)
                     break;
                 case 4:
                     Couts.push_back(string(1, memory[reg[10] /* - (0xfc00 << 12)*/]));
@@ -653,7 +653,7 @@ void instDecExec(unsigned int instWord)
                         address++;
                     }
                     break;
-                case 10:
+                case 10: //execution of operation (for ecall 10)
                     Couts.push_back("Program exited with code " + to_string(reg[10]) + "\n");
                     exitFlag = true;
                     break;
@@ -738,7 +738,7 @@ int main(int argc, char *argv[])
                 break;
         }
 
-        cout << "\nOutput: " << endl;
+        cout << "\nOutput: " << endl; //display
         for (int i = 0; i < Couts.size(); i++)
         {
             cout << Couts[i];
