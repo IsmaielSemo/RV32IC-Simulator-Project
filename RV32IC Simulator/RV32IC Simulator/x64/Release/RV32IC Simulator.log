@@ -1,9 +1,9 @@
 ﻿  rvsim.cpp
-C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(649,19): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
-C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(655,20): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
+C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(698,19): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
+C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\RV32IC Simulator\rvsim.cpp(704,20): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
   Generating code
   1 of 251 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   RV32IC Simulator.vcxproj -> C:\Users\Dell-\Desktop\Not Angry Birds\RV32IC-Simulator-Project\RV32IC Simulator\x64\Release\RV32IC Simulator.exe
